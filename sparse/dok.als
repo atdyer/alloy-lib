@@ -40,6 +40,15 @@ pred update_dok [d, d': DOK, row, col: Int, val: Value] {
 
 }
 
+pred transpose_dok [d, d': DOK] {
+
+	d'.rows = d.cols
+	d'.cols = d.rows
+
+	all i, j: Int | d.dict[i][j] = d'.dict[j][i]
+
+}
+
 
 -----
 ----- Helper predicates
@@ -90,6 +99,13 @@ pred repInv [d: DOK] {
 			colInRange[d, j]
 	}
 
+	-- all row, col combinations may appear only once
+	all i, j: Int {
+		rowInRange[d, i] and
+		colInRange[d, j] => 
+			lone v: Value | i->j->v in d.dict
+	}
+
 }
 
 
@@ -104,7 +120,7 @@ assert initValid {
 
 check initValid for 5
 
--- check that updates do not violate invariant
+-- check that updates do not violate the invariant
 assert updateValid {
 	all d, d': DOK, i, j: Int, v: Value {
 		repInv[d] and update_dok[d, d', i, j, v] => repInv[d']
@@ -112,6 +128,15 @@ assert updateValid {
 }
 
 check updateValid for 5
+
+-- check that tranpose does not violate the invariant
+assert transposeValid {
+	all d, d': DOK {
+		repInv[d] and transpose_dok[d, d'] => repInv[d']
+	}
+}
+
+check transposeValid for 5
 
 -- check for refinement
 assert refines {
@@ -125,6 +150,12 @@ assert refines {
 		and alpha[d, m] 
 		and alpha[d', m'] => 
 			update[m, m', i, j, v]
+
+		repInv[d]
+		and transpose_dok[d, d']
+		and alpha[d, m]
+		and alpha[d', m'] =>
+			transpose[m, m'] 
 
 	}
 
@@ -151,8 +182,9 @@ pred show {
 
 run show for exactly 1 DOK, exactly 1 Matrix, exactly 2 Value, 5 Int
 
+
 -- an example that updates
-pred showUpdate {
+pred show_update_dok {
 	
 	-- keep things limited to a 2x2 matrix for simplicity
 	all m: Matrix | m.rows = 2 and m.cols = 2
@@ -167,6 +199,14 @@ pred showUpdate {
 
 }
 
-run showUpdate for exactly 2 DOK, exactly 1 Matrix, exactly 2 Value, 5 Int
+run show_update_dok for exactly 2 DOK, exactly 1 Matrix, exactly 2 Value, 5 Int
 
 
+-- an example that transposes
+pred show_transpose_dok {
+	one d: DOK | d.rows = 3 and d.cols = 2 and #d.dict > 0
+	some d, d': DOK |
+		disj[d, d'] and repInv[d] and transpose_dok[d, d']
+}
+
+run show_transpose_dok for 2 DOK, 0 Matrix, exactly 4 Value, 5 Int
