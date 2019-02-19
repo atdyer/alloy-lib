@@ -59,7 +59,7 @@ fun getValue [y: Yale, row, col: Int]: Value {
 			
 			let nvals = sub[end, start],
 				  JA = y.JA.subseq[start, sub[end, 1]],
-					A  =  y.A.subseq[start, sub[end, 1]] {
+				  A  =  y.A.subseq[start, sub[end, 1]] {
 
 				-- if there are no values on this row, the value is zero
 				nvals = 0 => Zero else {
