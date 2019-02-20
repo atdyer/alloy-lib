@@ -23,7 +23,7 @@ pred init_yale [y: Yale, nrows, ncols: Int] {
 	y.IA = 0->0
 }
 
-pred update [y, y': Yale, row, col: Int, v: Value] {
+pred update [y, y': Yale, row, col: Int, val: Value] {
 
 	-- matrix size stays the same
 	y'.rows = y.rows
@@ -33,9 +33,65 @@ pred update [y, y': Yale, row, col: Int, v: Value] {
 	rowInRange[y, row]
 	colInRange[y, col]
 
-	
+	let curr = getValue[y, row, col] {
+--		curr != Zero and val != Zero and update_existing[y, y', row, col, val]
+		curr != Zero and val = Zero and remove_existing[y, y', row, col]
+	}
 
 }
+
+-- Change nonzero value to another nonzero value
+pred update_existing [y, y': Yale, row, col: Int, val: Value] {
+
+	y'.IA = y.IA
+	y'.JA = y.JA
+
+	let start = y.IA[row],
+	    end   = y.IA[add[row,1]],
+	    JAsub = y.JA.subseq[start, sub[end, 1]],
+	    index = add[start, JAsub.idxOf[col]] {
+
+		y'.A = y.A.setAt[index, val]
+
+	}
+
+}
+
+
+pred remove_existing [y, y': Yale, row, col: Int] {
+
+	let start = y.IA[row],
+	    end   = y.IA[add[row, 1]],
+			JAsub = y.JA.subseq[start, sub[end, 1]],
+	    index = add[start, JAsub.idxOf[col]] {
+
+		-- all IA leading up to end remain the same
+		-- all IA including and after end subtract one
+		y'.JA = y.JA.delete[index]
+		y'.A  =  y.A.delete[index]
+
+		-- all indices up to and including the start index for this row remain the same
+		y'.IA.subseq[0, row] = y.IA.subseq[0, row]
+
+		-- all indices including and after the end index for this row subtract one
+		let endIndex = add[row, 1],
+		    IAlength = y.IA.lastIdx {
+			
+			-- if the end index is the last value in the IA array, simply remove it
+			(endIndex = IAlength and y'.IA = y.IA.delete[endIndex]) or
+
+			subEach[
+				y .IA.subseq[endIndex, IAlength],
+				y'.IA.subseq[endIndex, IAlength],
+				1
+			]
+
+		}
+
+	}
+
+}
+
 
 -----
 ----- Helper predicates
@@ -49,6 +105,25 @@ pred colInRange [y: Yale, col: Int] {
 	0 <= col and col < y.cols
 }
 
+-- s' is the sequence in which n is added to each value in sequence s
+pred addEach [s, s': seq Int, n: Int] {
+
+	s.inds = s'.inds
+
+	all i: s.inds | s'[i] = add[s[i], n]
+
+}
+
+-- s' is the sequence in which n is subtracted from each value in sequence s
+pred subEach [s, s': seq Int, n: Int] {
+
+	s.inds = s'.inds
+
+	all i: s.inds | s'[i] = sub[s[i], n]
+
+}
+
+-- get the value in the matrix
 fun getValue [y: Yale, row, col: Int]: Value {
 
 	let start = y.IA[row],
@@ -58,15 +133,15 @@ fun getValue [y: Yale, row, col: Int]: Value {
 		(no start or no end) => Zero else {
 			
 			let nvals = sub[end, start],
-			    JA = y.JA.subseq[start, sub[end, 1]],
-			     A =  y.A.subseq[start, sub[end, 1]] {
+			    JAsub = y.JA.subseq[start, sub[end, 1]],
+			     Asub =  y.A.subseq[start, sub[end, 1]] {
 
 				-- if there are no values on this row, the value is zero
 				nvals = 0 => Zero else {
 
-					let index = JA.idxOf[col] {
+					let index = JAsub.idxOf[col] {
 
-						no index => Zero else A[index]
+						no index => Zero else Asub[index]
 
 					}
 
@@ -103,8 +178,8 @@ An example matrix from the sparse matrix wikipedia page
 */
 pred wiki {
 	#Matrix = 0
-	#Yale = 1
-	all y: Yale {
+	#Yale = 2
+	one y: Yale {
 		y.rows = 4
 		y.cols = 4
 		#y.A = 4
@@ -124,6 +199,7 @@ pred wiki {
 		y.JA[2] = 2
 		y.JA[3] = 1
 	}
+	some y, y': Yale | update[y, y', 3, 1, Zero]
 }
 
 run wiki for 5
