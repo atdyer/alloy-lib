@@ -76,6 +76,13 @@ pred colInRange [m: Matrix, col: Int] {
 ----- Checks and Runs
 -----
 
+-- create a 0x0 matrix
+pred showNone {
+	one m: Matrix | m.rows = 0 and m.cols = 0
+}
+
+run showNone for 5 but exactly 1 Matrix
+
 -- create an empty 2x2 matrix
 pred show {
 	all m: Matrix | init[m, 2, 2]
