@@ -60,7 +60,7 @@ pred NZtoNZ [y, y': Yale, row, col: Int, val: Value] {
   -- a = IA[row]
   -- b = IA[row+1]
   -- j = J[a, b)
-  -- i = index of col in j
+  -- i = index of col in JA
   let a = y.IA[row],
       b = y.IA[add[row, 1]],
       j = y.JA.subseq[a, sub[b, 1]],
