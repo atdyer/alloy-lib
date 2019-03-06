@@ -69,6 +69,10 @@ pred NZtoZ [y, y': Yale, row, col: Int, val: Value] {
 }
 
 pred ZtoNZ [y, y': Yale, row, col: Int, val: Value] {
+
+  #y.A < #seq/Int   -- avoid maximum sequence length issues
+  #y.IA < #seq/Int
+
   get[y, row, col] = Zero
   val != Zero
   let a = y.IA[row],           -- IA[row]
