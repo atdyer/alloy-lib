@@ -84,7 +84,7 @@ assert refines {
 check initValid for 2 but 0 Matrix
 check NZtoNZvalid for 2 but 0 Matrix
 check NZtoZvalid for 2 but 0 Matrix
-check ZtoNZvalid for 3 but 0 Matrix
+check ZtoNZvalid for 2 but 0 Matrix
 check ZtoZvalid for 2 but 0 Matrix
 check updateValid for 2 but 0 Matrix
 check refines for 2
