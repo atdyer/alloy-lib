@@ -77,22 +77,22 @@ pred ZtoNZ [y, y': Yale, row, col: Int, val: Value] {
   val != Zero
   let a = y.IA[row],           -- IA[row]
       b = y.IA[add[row, 1]] {  -- IA[row+1]
-    some a => {
+    some a => {                                   -- IA[row] exists
       y'.IA.subseq[0, row] = y.IA.subseq[0, row]
-      some b => let bi = add[row, 1],
+      some b => let bi = add[row, 1],             -- IA[row+1] exists
                     li = sub[#y.IA, 1] {
         y'.A = y.A.insert[b, val]
         y'.JA = y.JA.insert[b, col]
         addEach[y.IA.subseq[bi, li], y'.IA.subseq[bi, li], 1]
         #y'.IA = #y.IA
       }
-      no b => {
+      no b => {                                   -- IA[row+1] doesn't exist
         y'.A = y.A.add[val]
         y'.JA = y.JA.add[col]
         y'.IA = y.IA.add[add[a, 1]]
       }
     }
-    no a => {
+    no a => {                                     -- IA[row] doesn't exist
       y'.A = y.A.add[val]
       y'.JA = y.JA.add[col]
       let l = #y.IA,         -- length of IA

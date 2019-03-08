@@ -1,9 +1,7 @@
 module matrix
 
+open value
 open util/integer
-
-sig Value {}
-one sig Zero extends Value {}
 
 sig Matrix {
 
