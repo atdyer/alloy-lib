@@ -1,4 +1,4 @@
 module value
 
 sig Value {}
-sig Zero extends Value {}
+lone sig Zero extends Value {}
