@@ -4,37 +4,40 @@ module expression
 open matrix
 
 sig Vector extends Matrix {} {
-  all v: values[univ][univ] | v in Expression
+  cols = 1
 }
 
 --- matrix stuff
-pred spmv [m: Matrix, v: Matrix, r: Vector] {
+pred spmv [m: Matrix, v: Vector, r: Vector] {
 
   -- matrix and vector are compatible
   m.cols = v.rows
-  v.cols = 1
 
   -- result has same shape as vector
   r.rows = v.rows
   r.cols = v.cols
 
-/**
-  -- each row of the result vector is a single expression
-  all i: Int {
+  -- no expressions in v
+  all x: v.values[univ][univ] | x not in Expression
 
-    0 <= i and i <= r.rows => {
+  -- all r values are Sums
+  all x: r.values[univ][univ] | x in Sum
 
-      let expr = r.values[row][0] {
-
-        expr
-
+  -- i = current row
+  -- j = current column
+  all i, j: Int {
+    0 <= i and i <= m.rows and
+    0 <= j and j <= v.rows => {
+      let A = m.values[i][j],    -- A = matrix[i][j]
+          b = v.values[i][0],    -- b = vector[i]
+          s = r.values[i][0] {   -- s = result[i] (a Sum)
+        some p: Product {
+          p.variables = A + b
+          p in s.variables
+        }
       }
-
     }
-
   }
-**/
-
 }
 
 pred show_spmv {
@@ -45,4 +48,13 @@ pred show_spmv {
     disj[m, v, r]
 }
 
+pred show_vector {
+  some m: Matrix, v: Vector {
+    m.rows > 0
+    m.cols > 0
+    m.cols = v.rows
+  }
+}
+
 run show_spmv for 5 but exactly 3 Matrix, exactly 1 Vector
+run show_vector for 5 but exactly 2 Matrix, exactly 1 Vector
