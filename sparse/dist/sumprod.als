@@ -17,11 +17,25 @@ sig SumProd extends Value {
   values: seq {Value-SumProd} -> {Value-SumProd}
 }
 
-fun filterZeros [e: SumProd]: Int {
+fun nonzeroIndices [e: SumProd]: Int {
   e.values.univ.univ - (e.values.univ.Zero + e.values.Zero.univ)
 }
 
-pred isZero [e: SumProd] {
-  no filterZeros[e]
+fun removeZeros [e: SumProd]: Int->Value->Value {
+  nonzeroIndices[e] <: e.values
 }
 
+pred isZero [e: SumProd] {
+  no removeZeros[e]
+}
+
+pred sumProdEqv [x, y: SumProd] {
+  removeZeros[x] = removeZeros[y]
+}
+
+pred showSumProdEqv {
+  -- one x: SumProd | Zero in x.values.univ[univ]
+  some x, y: SumProd | sumProdEqv[x, y] and disj[x, y]
+}
+
+run showSumProdEqv for 5
