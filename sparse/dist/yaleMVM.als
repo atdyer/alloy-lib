@@ -44,3 +44,9 @@ pred showSPMV {
 }
 
 run showSPMV for 5
+
+assert mvmRefines {
+  all Y: Yale, x, M, Yb, Mb: Matrix {
+    repInv[Y] and alpha[Y, M]
+  }
+}
