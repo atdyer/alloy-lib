@@ -12,6 +12,26 @@ sig Yale {
   cols >= 0
 }
 
+pred repInv [y: Yale] {
+  Zero not in y.A.elems
+  all i: y.IA.rest.elems | gte[i, 0] and lte[i, mul[y.rows, y.cols]]  -- IA values <= rows*cols
+  all j: y.JA.elems | gte[j, 0] and lt[j, y.cols]                     -- JA values < cols
+  y.IA[0] = 0
+  y.IA.last = #y.A                               -- last value of IA is length of A
+  #y.IA > 1 => gt[y.IA.last, y.IA.butlast.last]  -- last value of IA not repeated
+  #y.A = #y.JA
+  lte[#y.A, mul[y.rows, y.cols]]                 -- max length of A = rows*cols
+  lte[#y.IA, add[y.rows, 1]]                     -- max length of IA = rows+1
+  all i: y.IA.inds |
+    i > 0 => let a = y.IA[sub[i, 1]],
+                 b = y.IA[i],
+                 n = sub[b, a] {
+      b >= a                                -- values of IA increasing
+      n <= y.cols                           -- max number of values in row
+      #y.JA.subseq[a, sub[b, 1]].elems = n  -- column indices unique per row
+    }
+}
+
 pred initYale [y: Yale, nrows, ncols: Int] {
   y.rows = nrows
   y.cols = ncols

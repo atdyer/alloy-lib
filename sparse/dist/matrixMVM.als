@@ -7,9 +7,9 @@ pred MVM [A, x, b: Matrix] {
   x.cols = 1
   b.cols = 1
   all i: Int {
-      0 <= i and i < A.rows => {
-        dotProd[A.values[i], x, b.values[i][0]]
-      }
+    0 <= i and i < A.rows => {
+      dotProd[A.values[i], x, b.values[i][0]]
+    }
   }
 }
 

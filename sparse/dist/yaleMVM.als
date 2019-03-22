@@ -1,56 +1,46 @@
 open yale
+open sumprod
+open yaleRefinement
+open matrixMVM
 
-pred repInv [y: Yale] {
-  Zero not in y.A.elems
-  all i: y.IA.rest.elems | gte[i, 0] and lte[i, mul[y.rows, y.cols]]  -- IA values <= rows*cols
-  all j: y.JA.elems | gte[j, 0] and lt[j, y.cols]                     -- JA values < cols
-  y.IA[0] = 0
-  y.IA.last = #y.A                               -- last value of IA is length of A
-  #y.IA > 1 => gt[y.IA.last, y.IA.butlast.last]  -- last value of IA not repeated
-  #y.A = #y.JA
-  lte[#y.A, mul[y.rows, y.cols]]                 -- max length of A = rows*cols
-  lte[#y.IA, add[y.rows, 1]]                     -- max length of IA = rows+1
-  all i: y.IA.inds |
-    i > 0 => let a = y.IA[sub[i, 1]],
-                 b = y.IA[i],
-                 n = sub[b, a] {
-      b >= a                                -- values of IA increasing
-      n <= y.cols                           -- max number of values in row
-      #y.JA.subseq[a, sub[b, 1]].elems = n  -- column indices unique per row
+pred MVM [Y: Yale, x, b: Matrix] {
+  Y.rows = b.rows
+  Y.cols = x.rows
+  x.cols = 1
+  b.cols = 1
+  all i: Int {
+    0 <= i and i < Y.rows => {
+      let s = Y.IA[i],            -- start index for row
+          t = Y.IA[add[i, 1]],    -- end index for row
+          r = b.values[i][0] {    -- SumProd for row
+            (no s or no t or s = t) => r = Zero else {
+              let j = Y.JA.subseq[s, sub[t, 1]],   -- JA[s, t)
+                  v = Y.A.subseq[s, sub[t, 1]] {   -- A[s, t)
+                dotProd[j, v, x, r]
+              }
+            }
+          }
     }
+  }
 }
 
--- AX = B
--- A: mxn
--- X: nx1
--- B: mx1
-pred spmv [A: Yale, X: Matrix, B: Matrix] {
-  repInv[A]
-  A.rows = B.rows
-  A.cols = X.rows
-  B.cols = 1
-  X.cols = 1
+pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
+  #cols = #vals
+  #cols = #b.values
   all i: Int {
-    0 <= i and i < B.rows => {
-      let a = A.IA[i],           -- start bounds for values in A
-          b = A.IA[add[i, 1]],
-          row = B.values[i][0] {  -- end bounds for values in A
-        (no a or no b or a = b) => row = Zero else {
-          -- build expression here
-          -- row is a sum
-          -- each expression in row is a product
-          -- each product consists of A[i, j]*X[j, 0]
-        }
-      }
+    0 <= i and i < #cols => {
+      let col = cols[i],
+          val = vals[i] {
+            b.values[col] = val -> x.values[col][0]
+          }
     }
   }
 }
 
 pred showSPMV {
-  some A: Yale, x, b: Matrix | 
-    spmv[A, x, b] and
-    A.rows > 0 and
-    A.cols > 0 -- and b.values[univ][univ] = Zero
+  some Y: Yale, x, b: Matrix | 
+    repInv[Y]
+    and MVM[Y, x, b]
 }
 
-run showSPMV for 5 but 0 Expression
+run showSPMV for 5

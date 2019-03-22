@@ -14,7 +14,7 @@ of sparse matrix-vector multiplications.
 open value
 
 sig SumProd extends Value {
-  values: seq {Value-SumProd} -> {Value-SumProd}
+  values: Int -> (Value-SumProd) -> (Value-SumProd)
 }
 
 fun nonzeroIndices [e: SumProd]: Int {
@@ -33,9 +33,15 @@ pred sumProdEqv [x, y: SumProd] {
   removeZeros[x] = removeZeros[y]
 }
 
-pred showSumProdEqv {
-  -- one x: SumProd | Zero in x.values.univ[univ]
-  some x, y: SumProd | sumProdEqv[x, y] and disj[x, y]
+pred valEqv [x, y: Value] {
+  (x = y)
+  or (x in SumProd and isZero[x] and y = Zero)
+  or (y in SumProd and isZero[y] and x = Zero)
+  or (x in SumProd and y in SumProd and all i: Int | x.values[i] = y.values[i])
 }
 
+pred showSumProdEqv { some x, y: SumProd | sumProdEqv[x, y] and disj[x, y] }
+pred showValEqv { some x, y: Value | valEqv[x, y] }
+
 run showSumProdEqv for 5
+run showValEqv for 3
