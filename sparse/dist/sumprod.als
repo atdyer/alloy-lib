@@ -16,7 +16,11 @@ open value
 sig SumProd extends Value {
   values: Int -> (Value-SumProd) -> (Value-SumProd)
 } {
+  #values < #seq/Int 
   values.univ.univ >= 0
+  all i: Int {
+    i in values.univ.univ => #values[i] = 1
+  }
 }
 
 fun nonzeroIndices [e: SumProd]: Int {

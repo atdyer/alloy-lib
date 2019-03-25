@@ -54,15 +54,31 @@ pred solutionsEqv [a, b: Matrix] {
   }
 }
 
+/**
+check {
+  all Y: Yale, x, M, Yb, Mb: Matrix {
+    ((repInv[Y]
+    and alpha[Y, M]
+    and MVM[Y, x, Yb]
+    and MVM[M, x, Mb]) => solutionsEqv[Yb, Mb])
+  }
+} for 4 but 1 Yale, 4 Int
+**/
+
+
+pred ref [Y: Yale, x, M, Yb, Mb: Matrix] {
+  repInv[Y]
+    and alpha[Y, M]
+    and MVM[Y, x, Yb]
+    and MVM[M, x, Mb]
+}
+
 -- refinement
 check {
   all Y: Yale, x, M, Yb, Mb: Matrix {
-    repInv[Y]
-    and alpha[Y, M]
-    and MVM[Y, x, Yb]
-    and MVM[M, x, Mb] => solutionsEqv[Yb, Mb]
+    ref[Y, x, M, Yb, Mb] => solutionsEqv[Yb, Mb]
   }
-} for 4 but exactly 1 Yale, exactly 4 Matrix
+} for 4 but 1 Yale, 4 Int
 
 
 /**
