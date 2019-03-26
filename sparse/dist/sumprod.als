@@ -16,11 +16,8 @@ open value
 sig SumProd extends Value {
   values: Int -> (Value-SumProd) -> (Value-SumProd)
 } {
-  #values < #seq/Int 
-  values.univ.univ >= 0
-  all i: Int {
-    i in values.univ.univ => #values[i] = 1
-  }
+  all i: Int | lone i.values
+  all i: values.univ.univ | i >= 0
 }
 
 fun nonzeroIndices [e: SumProd]: Int {
@@ -43,7 +40,8 @@ pred valEqv [x, y: Value] {
   (x = y)
   or (x in SumProd and isZero[x] and y = Zero)
   or (y in SumProd and isZero[y] and x = Zero)
-  or (x in SumProd and y in SumProd and all i: Int | x.values[i] = y.values[i])
+  or (isZero[x] and isZero[y])
+  or (x in SumProd and y in SumProd and removeZeros[x] = removeZeros[y])
 }
 
 pred showSumProdEqv { some x, y: SumProd | sumProdEqv[x, y] and disj[x, y] }

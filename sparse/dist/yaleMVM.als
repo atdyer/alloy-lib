@@ -26,6 +26,17 @@ pred MVM [Y: Yale, x, b: Matrix] {
   }
 }
 
+-- cols: index -> column
+pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
+  all c: cols[univ] {
+    let i = cols.c | b.values[c] = vals[i] -> x.values[c][0]
+  }
+  all c: Int - cols[univ] {
+    no b.values[c]
+  }
+}
+
+/**
 pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
   #cols = #vals
   #cols = #b.values
@@ -38,6 +49,7 @@ pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
     }
   }
 }
+**/
 
 pred solutionsEqv [a, b: Matrix] {
   a.rows = b.rows

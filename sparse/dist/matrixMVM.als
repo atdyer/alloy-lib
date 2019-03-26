@@ -16,14 +16,11 @@ pred MVM [A, x, b: Matrix] {
 }
 
 pred dotProd [a: Int->Value, x: Matrix, b: SumProd] {
-  #a = #x.values
-  #a = #b.values
-  all i: Int {
-    0 <= i and i < #a => {
-      let product = b.values[i] {
-        product = a[i]->x.values[i][0]
-      }
-    }
+  all i: a.univ {
+    b.values[i] = a[i]->x.values[i][0]
+  }
+  all i: Int - a.univ {
+    no b.values[i]
   }
 }
 
@@ -34,7 +31,7 @@ run {
     A.cols = 1
     disj[A, x, b]
   }
-}
+} for 4 Int
 
 /**
 run {
