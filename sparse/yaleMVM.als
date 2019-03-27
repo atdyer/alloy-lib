@@ -4,8 +4,6 @@ open yaleRefinement
 open matrixMVM
 
 pred MVM [Y: Yale, x, b: Matrix] {
-  Y.rows > 0
-  Y.cols > 0
   Y.rows = b.rows
   Y.cols = x.rows
   x.cols = 1
@@ -26,7 +24,6 @@ pred MVM [Y: Yale, x, b: Matrix] {
   }
 }
 
--- cols: index -> column
 pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
   all c: cols[univ] {
     let i = cols.c | b.values[c] = vals[i] -> x.values[c][0]
@@ -35,21 +32,6 @@ pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
     no b.values[c]
   }
 }
-
-/**
-pred dotProd [cols: Int->Int, vals: Int->Value, x: Matrix, b: SumProd] {
-  #cols = #vals
-  #cols = #b.values
-  all i: Int {
-    0 <= i and i < #cols => {
-      let col = cols[i],
-          val = vals[i] {
-            b.values[col] = val -> x.values[col][0]
-          }
-    }
-  }
-}
-**/
 
 pred solutionsEqv [a, b: Matrix] {
   a.rows = b.rows
@@ -66,18 +48,6 @@ pred solutionsEqv [a, b: Matrix] {
   }
 }
 
-/**
-check {
-  all Y: Yale, x, M, Yb, Mb: Matrix {
-    ((repInv[Y]
-    and alpha[Y, M]
-    and MVM[Y, x, Yb]
-    and MVM[M, x, Mb]) => solutionsEqv[Yb, Mb])
-  }
-} for 4 but 1 Yale, 4 Int
-**/
-
-
 pred ref [Y: Yale, x, M, Yb, Mb: Matrix] {
   repInv[Y]
     and alpha[Y, M]
@@ -90,15 +60,4 @@ check {
   all Y: Yale, x, M, Yb, Mb: Matrix {
     ref[Y, x, M, Yb, Mb] => solutionsEqv[Yb, Mb]
   }
-} for 4 but 1 Yale, 4 Int
-
-
-/**
-pred showSPMV {
-  some Y: Yale, x, b: Matrix | 
-    repInv[Y]
-    and MVM[Y, x, b]
-}
-
-run showSPMV for 5
-**/
+} for 4
