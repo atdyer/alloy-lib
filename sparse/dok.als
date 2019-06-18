@@ -151,11 +151,11 @@ assert refines {
     and alpha[d', m'] => 
       update[m, m', i, j, v]
 
-    repInv[d]
+/**    repInv[d]
     and transpose_dok[d, d']
     and alpha[d, m]
     and alpha[d', m'] =>
-      transpose[m, m'] 
+      transpose[m, m'] **/
 
   }
 
@@ -183,6 +183,11 @@ pred show {
 
 run show for exactly 1 DOK, exactly 1 Matrix, exactly 2 Value, 5 Int
 
+pred show2x2 {
+  all d: DOK | d.rows = 2 and d.cols = 2 and repInv[d]
+}
+
+run show2x2 for exactly 1 DOK, 0 Matrix, 2 Value
 
 -- an example that updates
 pred show_update_dok {
