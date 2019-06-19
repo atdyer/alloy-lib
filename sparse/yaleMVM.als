@@ -55,7 +55,8 @@ pred ref [Y: Yale, x, M, Yb, Mb: Matrix] {
     and MVM[M, x, Mb]
 }
 
--- refinement
+-- (sat4j) No counterexample found. Assertion may be valid. 40687ms.
+-- (lingeling) No counterexample found. Assertion may be valid. 13001ms.
 check {
   all Y: Yale, x, M, Yb, Mb: Matrix {
     ref[Y, x, M, Yb, Mb] => solutionsEqv[Yb, Mb]

@@ -14,7 +14,7 @@ pred validIndices [e, e': ELL, i, j: Int] {
   e'.cols = e.cols
   e'.maxnz = e.maxnz
   rowInRange[e, i]
-  rowInRange[e, j]
+  colInRange[e, j]
 }
 
 assert initValid {
@@ -26,6 +26,18 @@ assert NZtoNZvalid {
   all e, e': ELL, i, j: Int, v: Value |
     validIndices[e, e', i, j] and
     repInv[e] and NZtoNZ[e, e', i, j, v] => repInv[e']
+}
+
+assert NZtoZvalid {
+  all e, e': ELL, i, j: Int, v: Value |
+    validIndices[e, e', i, j] and
+    repInv[e] and NZtoZ[e, e', i, j, v] => repInv[e']
+}
+
+assert ZtoNZvalid {
+  all e, e': ELL, i, j: Int, v: Value |
+    validIndices[e, e', i, j] and
+    repInv[e] and ZtoNZ[e, e', i, j, v] => repInv[e']
 }
 
 assert ZtoZvalid {
@@ -42,5 +54,7 @@ assert refines {
 
 check initValid for 5 but 0 Matrix
 check NZtoNZvalid for 5 but 0 Matrix, exactly 2 ELL
+check NZtoZvalid for 5 but 0 Matrix, exactly 2 ELL
+check ZtoNZvalid for 5 but 0 Matrix, exactly 2 ELL
 check ZtoZvalid for 2 but 0 Matrix
 check refines for 5
