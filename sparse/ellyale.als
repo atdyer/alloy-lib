@@ -56,3 +56,16 @@ assert fullELLisYale {
 }
 
 check fullELLisYale for 6 but exactly 1 ELL, exactly 1 Yale, 1 Matrix
+
+assert ellYaleEqvParts {
+  all e: ELL, y: Yale, m: Matrix {
+    repInv[e] and
+    repInv[y] and
+    alpha[e, m] and
+    alpha[y, m] => {
+      y.JA = (e.columns).delete[e.columns.indsOf[-1]]
+    }
+  }
+}
+
+check ellYaleEqvParts for 6 but exactly 1 ELL, exactly 1 Yale, exactly 1 Matrix
