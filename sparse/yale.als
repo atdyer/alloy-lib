@@ -18,6 +18,7 @@ pred repInv [y: Yale] {
   all j: y.JA.elems | gte[j, 0] and lt[j, y.cols]                     -- JA values < cols
   y.IA[0] = 0
   y.IA.last = #y.A                               -- last value of IA is length of A
+  #y.IA = add[y.rows, 1]
   #y.IA > 1 => gt[y.IA.last, y.IA.butlast.last]  -- last value of IA not repeated
   #y.A = #y.JA
   lte[#y.A, mul[y.rows, y.cols]]                 -- max length of A = rows*cols
