@@ -6,6 +6,7 @@ open csrRefinement
 pred sameMatrix [e: ELL, c: CSR, m: Matrix] {
   repInv[e]
   repInv[c]
+  repInv[m]
   alpha[e, m]
   alpha[c, m]
 }
@@ -32,7 +33,7 @@ pred differenceIsNumPlaceholders [e: ELL, c: CSR] {
 
 assert ELLCSRIndexRelationship {
   all e: ELL, c: CSR, m: Matrix |
-    sameMatrix[e, c, m] and sameOrder[e, c] =>
+    sameMatrix[e, c, m] and sameOrder[e, c] and m.rows > 0 and m.cols > 0 =>
       differenceIsNumPlaceholders[e, c]
 }
 
@@ -54,10 +55,25 @@ pred leftAligned [e: ELL] {
 pred ELLCSRslicing [e: ELL, c: CSR] {
   all row: rowInds[e] {
     let rc = rowcols[e, row],
+        rv = rowvals[e, row],
         firstph = rc.idxOf[-1] {
-      c.IA[add[row, 1]] = add[c.IA[row], firstph]  -- IA[row+1] = IA[row] + firstph
-      c.A.subseq[row, add[row, firstph]]  -- JA[row, row+firstph] = rc[0, firstph]
-                                          -- A[row, row+firstph] = rv[0, firstph]
+      no firstph => {
+        -- no placeholders, row is densely packed
+        c.IA[add[row, 1]] = add[c.IA[row], e.maxnz]
+        c.JA.subseq[row, add[row, e.maxnz]] = rc
+        c.A.subseq[row, add[row, e.maxnz]] = rv
+      } else firstph = 0 => {
+        -- all placeholders, row is empty
+        c.IA[add[row, 1]] = c.IA[row]
+      } else {
+        -- some placeholders, row is sparse
+        let sidx = c.IA[row],           -- start index
+            eidx = c.IA[add[row, 1]] {  -- end index
+          eidx = add[sidx, firstph]
+          c.JA.subseq[sidx, sub[eidx, 1]] = rc.subseq[0, sub[firstph, 1]]
+          c.A.subseq[sidx, sub[eidx, 1]] = rv.subseq[0, sub[firstph, 1]]
+        }
+      }
     }
   }
 }
@@ -71,12 +87,25 @@ pred showLeftAligned {
     and some row: rowInds[e] | let rc = rowcols[e, row] | #rc.indsOf[-1] > 1
 }
 
+pred showELLCSRslicing {
+  some e: ELL, c: CSR, m: Matrix |
+    sameMatrix[e, c, m] and ELLCSRslicing[e, c]
+}
+
+assert leftAlignedCSRslicing {
+  all e: ELL, c: CSR, m: Matrix |
+    sameMatrix[e, c, m] and leftAligned[e] => ELLCSRslicing[e, c]
+}
+
 run showLeftAligned for 8
+run showELLCSRslicing for 10 but exactly 1 ELL, exactly 1 CSR, exactly 1 Matrix
+check leftAlignedCSRslicing for 8 but exactly 1 ELL, exactly 1 CSR, exactly 1 Matrix
 
 -----
 
 pred showSame {
   some e: ELL, c: CSR, m: Matrix |
+    m.rows > 0 and m.cols > 0 and
     sameMatrix[e, c, m] and sameOrder[e, c]
 }
 

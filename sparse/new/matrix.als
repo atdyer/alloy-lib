@@ -11,9 +11,8 @@ sig Matrix {
 pred repInv [m: Matrix] {
   m.rows >= 0
   m.cols >= 0
-  #m.values = mul[m.rows, m.cols]     -- #values = rows*cols
-  all i: rowInds[m], j: colInds[m] |  -- all i,j pairs in matrix
-    i->j in m.values.univ
+  m.values.univ = rowInds[m]->colInds[m]
+  #m.values = mul[m.rows, m.cols]
 }
 
 pred init [m: Matrix, nrows, ncols: Int] {
@@ -21,9 +20,8 @@ pred init [m: Matrix, nrows, ncols: Int] {
   ncols >= 0
   m.rows = nrows
   m.cols = ncols
-  #m.values = mul[m.rows, m.cols]
-  all i: rowInds[m], j: colInds[m] |
-    m.values[i][j] = Zero
+  m.values = rowInds[m]->colInds[m]->Zero
+  #m.values = mul[nrows, ncols]
 }
 
 fun indices [r: Int]: Int {

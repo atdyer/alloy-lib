@@ -43,4 +43,4 @@ run init1x1 for 2 but exactly 1 CSR, 0 Matrix
 run init2x2 for 3 but exactly 1 CSR, 0 Matrix
 run show0x0 for 1 but exactly 1 CSR, 0 Matrix
 run show1x1 for 2 but exactly 1 CSR, 0 Matrix
-run show2x2 for 3 but exactly 1 CSR, 0 Matrix
+run show2x2 for 4 but exactly 1 CSR, 0 Matrix

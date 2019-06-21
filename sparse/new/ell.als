@@ -11,6 +11,10 @@ sig ELL {
 
 pred repInv [e: ELL] {
 
+  -- prevent overflows
+  mul[e.rows, e.maxnz] >= e.rows
+  mul[e.rows, e.maxnz] >= e.maxnz
+
   e.rows >= 0                   -- rows >= 0
   e.cols >= 0                   -- cols >= 0
   e.maxnz >= 0                  -- maxnz >= 0

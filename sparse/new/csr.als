@@ -11,6 +11,11 @@ sig CSR {
 
 pred repInv [c: CSR] {
 
+  -- prevent overflows
+  mul[c.rows, c.cols] >= 0
+  mul[c.rows, c.cols] >= c.rows
+  mul[c.rows, c.cols] >= c.cols
+
   c.rows >= 0                      -- rows >= 0
   c.cols >= 0                      -- cols >= 0
   c.IA[0] = 0                      -- first value of IA is 0
@@ -51,7 +56,7 @@ fun colInds [c: CSR]: Int {
 fun get [c: CSR, row, col: Int]: Value {
   let a = c.IA[row],
       b = c.IA[add[row, 1]] {
-    (no a or no b) => none else {
+    (no a or no b or col not in colInds[c]) => none else {
       a = b => Zero else {
         let j = c.JA.subseq[a, sub[b, 1]],
             v = c.A.subseq[a, sub[b, 1]],
