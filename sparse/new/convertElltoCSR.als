@@ -38,6 +38,43 @@ assert ELLCSRIndexRelationship {
 
 check ELLCSRIndexRelationship for 6 but exactly 1 ELL, exactly 1 CSR, exactly 1 Matrix
 
+-----
+
+pred leftAligned [e: ELL] {
+  all row: rowInds[e] {
+    let rc = rowcols[e, row],
+        firstph = rc.idxOf[-1],
+        lastidx = sub[e.maxnz, 1] {
+      (firstph != none and firstph != lastidx) => 
+        rc.subseq[firstph, lastidx].elems = -1
+    }
+  }
+}
+
+pred ELLCSRslicing [e: ELL, c: CSR] {
+  all row: rowInds[e] {
+    let rc = rowcols[e, row],
+        firstph = rc.idxOf[-1] {
+      c.IA[add[row, 1]] = add[c.IA[row], firstph]  -- IA[row+1] = IA[row] + firstph
+      c.A.subseq[row, add[row, firstph]]  -- JA[row, row+firstph] = rc[0, firstph]
+                                          -- A[row, row+firstph] = rv[0, firstph]
+    }
+  }
+}
+
+pred showLeftAligned {
+  no CSR
+  no Matrix
+  one ELL
+  some e: ELL | 
+    repInv[e] and leftAligned[e] and e.rows > 1 and e.cols > 1 and e.maxnz > 1
+    and some row: rowInds[e] | let rc = rowcols[e, row] | #rc.indsOf[-1] > 1
+}
+
+run showLeftAligned for 8
+
+-----
+
 pred showSame {
   some e: ELL, c: CSR, m: Matrix |
     sameMatrix[e, c, m] and sameOrder[e, c]
