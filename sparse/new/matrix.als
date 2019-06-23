@@ -5,14 +5,13 @@ open util/integer
 
 sig Matrix {
   rows, cols: Int,
-  values: Int -> Int -> Value
+  values: (Int -> Int) -> lone Value
 }
 
 pred repInv [m: Matrix] {
   m.rows >= 0
   m.cols >= 0
   m.values.univ = rowInds[m]->colInds[m]
-  #m.values = mul[m.rows, m.cols]
 }
 
 pred init [m: Matrix, nrows, ncols: Int] {
@@ -21,7 +20,6 @@ pred init [m: Matrix, nrows, ncols: Int] {
   m.rows = nrows
   m.cols = ncols
   m.values = rowInds[m]->colInds[m]->Zero
-  #m.values = mul[nrows, ncols]
 }
 
 fun indices [r: Int]: Int {

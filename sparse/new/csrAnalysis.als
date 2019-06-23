@@ -1,27 +1,17 @@
 open csr
 
-/*
-Assert that the initialization predicate
-satisfies the representation invariant for
-all matrix sizes.
-*/
 assert initValid {
   all c: CSR, i, j: Int |
     init[c, i, j] => repInv[c]
 }
 
-/*
-Assert that the get function works as expected.
-Using valid indices will always return a value,
-and invalid indices will always return the
-empty set.
-*/
 assert getWorks {
   all c: CSR, i: rowInds[c], j: colInds[c] {
     repInv[c] => some get[c, i, j]
   }
-  all c: CSR, i: Int-rowInds[c], j: Int-colInds[c] {
-    repInv[c] => no get[c, i, j]
+  all c: CSR, i, j: Int {
+    (repInv[c] and i not in rowInds[c]) => no get[c, i, j]
+    (repInv[c] and j not in colInds[c]) => no get[c, i, j]
   }
 }
 
