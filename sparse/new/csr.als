@@ -11,26 +11,25 @@ sig CSR {
 
 pred repInv [c: CSR] {
 
-  -- prevent overflows
-  mul[c.rows, c.cols] >= 0
-  mul[c.rows, c.cols] >= c.rows
-  mul[c.rows, c.cols] >= c.cols
-
-  c.rows >= 0                      -- rows >= 0
-  c.cols >= 0                      -- cols >= 0
-  c.IA[0] = 0                      -- first value of IA is 0
-  c.IA.last = #c.A                 -- last value of IA is lenth of A
-  #c.IA = add[c.rows, 1]           -- length of IA is rows + 1
-  #c.A = #c.JA                     -- A and JA same length
-  lte[#c.A, mul[c.rows, c.cols]]   -- length of A <= rows * cols
-  Zero not in c.A.elems            -- no zeros stored
+  c.rows >= 0              -- rows >= 0
+  c.cols >= 0              -- cols >= 0
+  c.IA[0] = 0              -- first value of IA is 0
+  c.IA.last = #c.A         -- last value of IA is length of A
+  #c.IA = add[c.rows, 1]   -- length of IA is rows + 1
+  #c.A = #c.JA             -- A and JA same length
+  Zero not in c.A.elems    -- no zeros stored
 
   -- values of IA increasing
   all i: indices[c.rows] |
     c.IA[i] <= c.IA[add[i, 1]]
 
-  -- values of JA <= cols
+  -- column indices less than number of columns
   all j: c.JA.elems | lte[0, j] and lt[j, c.cols]
+
+  -- column indices unique per row
+  all i: indices[c.rows] |
+    let a = c.IA[i], b = c.IA[add[i, 1]] |
+      !c.JA.subseq[a, sub[b, 1]].hasDups
 
 }
 
@@ -41,8 +40,7 @@ pred init [c: CSR, nrows, ncols: Int] {
   c.cols = ncols
   no c.A
   no c.JA
-  c.IA[Int] = 0
-  #c.IA = add[nrows, 1]
+  c.IA = rowInds[c]->0 + nrows->0
 }
 
 fun rowInds [c: CSR]: Int {

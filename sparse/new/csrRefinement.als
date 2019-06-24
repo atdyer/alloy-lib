@@ -19,3 +19,14 @@ assert refines {
 
 check repValid for 10 but exactly 1 CSR, exactly 1 Matrix
 check refines for 10 but exactly 1 CSR, exactly 1 Matrix
+
+
+pred showsize {
+  some c: CSR, m: Matrix {
+    c.rows = 6
+    c.cols = 6
+    repInv[c] and alpha[c, m] and repInv[m]
+  }
+}
+
+run showsize for 20 but 6 Int, 20 seq, exactly 1 CSR, exactly 1 Matrix

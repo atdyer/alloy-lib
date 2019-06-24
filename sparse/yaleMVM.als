@@ -62,3 +62,18 @@ check {
     ref[Y, x, M, Yb, Mb] => solutionsEqv[Yb, Mb]
   }
 } for 4
+
+pred showsize {
+  some Y: Yale, x, M, Yb, Mb: Matrix {
+    Y.rows = 4 and Y.cols = 4 and ref[Y, x, M, Yb, Mb]
+  }
+}
+
+-- 4x4, 6 minutes
+run showsize for 7 but 16 seq, 6 Int
+
+pred show {
+  some y: Yale, x, b: Matrix | y.rows = 5 and y.cols = 5 and MVM[y, x, b]
+}
+
+run show for 5
