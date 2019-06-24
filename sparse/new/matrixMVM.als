@@ -6,6 +6,8 @@ pred MVM [A, x, b: Matrix] {
   A.cols = x.rows
   x.cols = 1
   b.cols = 1
+  SumProd not in A.values[univ][univ]
+  SumProd not in x.values[univ][univ]
   all i: rowInds[A] |
     dotProd[A.values[i], x, b.values[i][0]]
 }
@@ -22,8 +24,8 @@ pred show [i, j: Int] {
     repInv[A] and
     repInv[x] and
     repInv[b] and
-    A.rows = 5 and
-    A.cols = 5 and
+    A.rows = i and
+    A.cols = j and
     Value-SumProd in A.values[univ][univ] and
     disj[A, x, b] and
     MVM[A, x, b]

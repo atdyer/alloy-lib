@@ -14,8 +14,7 @@ possible seq size is 7, allowing up to 6 rows. Be sure
 to set the seq length (and int) to an appropriate value.
   Values and column indices are stored in a sequence as
 well, and so the maximum total number of nonzero values
-a CSR matrix can hold is equal to the maximum seq size,
-as is the maximum number of columns.
+a CSR matrix can hold is equal to the maximum seq size.
 
 The following is a table showing the Int ranges for
 a given bitwidth:

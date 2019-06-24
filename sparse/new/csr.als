@@ -51,6 +51,29 @@ fun colInds [c: CSR]: Int {
   { i: Int | 0 <= i and i < c.cols }
 }
 
+fun rowcols [c: CSR, row: Int]: seq Int {
+  let a = c.IA[row],
+      b = c.IA[add[row, 1]] {
+    (no a or no b) => {none->none} else {
+      c.JA.subseq[a, sub[b, 1]]
+    }
+  }
+}
+
+fun rowvals [c: CSR, row: Int]: seq Value {
+  let a = c.IA[row],
+      b = c.IA[add[row, 1]] {
+    (no a or no b) => {none->none} else {
+      c.A.subseq[a, sub[b, 1]]
+    }
+  }
+}
+
+fun getrow [c: CSR, row: Int]: Int->Value {
+  let cols = rowcols[c, row],
+      vals = rowvals[c, row] | ~cols.vals
+}
+
 fun get [c: CSR, row, col: Int]: Value {
   let a = c.IA[row],
       b = c.IA[add[row, 1]] {
