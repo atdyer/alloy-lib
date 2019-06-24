@@ -43,14 +43,17 @@ pred init [c: CSR, nrows, ncols: Int] {
   c.IA = rowInds[c]->0 + nrows->0
 }
 
+-- create [0:c.rows)
 fun rowInds [c: CSR]: Int {
   { i: Int | 0 <= i and i < c.rows }
 }
 
+-- create [0:c.cols)
 fun colInds [c: CSR]: Int {
   { i: Int | 0 <= i and i < c.cols }
 }
 
+-- get seq of cols for a single row
 fun rowcols [c: CSR, row: Int]: seq Int {
   let a = c.IA[row],
       b = c.IA[add[row, 1]] {
@@ -60,6 +63,7 @@ fun rowcols [c: CSR, row: Int]: seq Int {
   }
 }
 
+-- get seq of vals for a single row
 fun rowvals [c: CSR, row: Int]: seq Value {
   let a = c.IA[row],
       b = c.IA[add[row, 1]] {
@@ -69,11 +73,13 @@ fun rowvals [c: CSR, row: Int]: seq Value {
   }
 }
 
+-- create {column->value} for a single row
 fun getrow [c: CSR, row: Int]: Int->Value {
   let cols = rowcols[c, row],
       vals = rowvals[c, row] | ~cols.vals
 }
 
+-- retrieve a value from the matrix
 fun get [c: CSR, row, col: Int]: Value {
   let a = c.IA[row],
       b = c.IA[add[row, 1]] {

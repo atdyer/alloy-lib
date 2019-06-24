@@ -22,14 +22,17 @@ pred init [m: Matrix, nrows, ncols: Int] {
   m.values = rowInds[m]->colInds[m]->Zero
 }
 
+-- create [0:r)
 fun indices [r: Int]: Int {
   { i: Int | 0 <= i and i < r }
 }
 
+-- create [0:m.rows)
 fun rowInds [m: Matrix]: Int {
   { i: Int | 0 <= i and i < m.rows }
 }
 
+-- create [0:m.cols)
 fun colInds [m: Matrix]: Int {
   { j: Int | 0 <= j and j < m.cols }
 }

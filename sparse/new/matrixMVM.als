@@ -1,6 +1,7 @@
 open matrix
 open sumprod
 
+-- Ax = b
 pred MVM [A, x, b: Matrix] {
   A.rows = b.rows
   A.cols = x.rows
@@ -12,6 +13,7 @@ pred MVM [A, x, b: Matrix] {
     dotProd[A.values[i], x, b.values[i][0]]
 }
 
+-- b = dot(row, x)
 pred dotProd [row: Int->Value, x: Matrix, b: SumProd] {
   all col: row.univ |
     b.values[col] = row[col]->x.values[col][0]
@@ -19,6 +21,7 @@ pred dotProd [row: Int->Value, x: Matrix, b: SumProd] {
     no b.values[col]
 }
 
+-- generate ixj MVM, force all values into matrix
 pred show [i, j: Int] {
   some A, x, b: Matrix |
     repInv[A] and
