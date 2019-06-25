@@ -33,6 +33,7 @@ pred repInv [c: CSR] {
 
 }
 
+-- initialize empty CSR
 pred init [c: CSR, nrows, ncols: Int] {
   nrows >= 0
   ncols >= 0

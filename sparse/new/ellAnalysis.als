@@ -1,55 +1,60 @@
 open ell
 
-/*
-Assert that the initialization predicate
-satisfies the representation invariant for
-all matrix sizes.
+/**
+Scope Notes:
+
+As in matrix, ELL values are indexed using integers, so
+matrix size is limited by bitwidth in the same way.
+However, in ELL matrices, both the values and columns
+sequences must be exactly rows*maxnz values long. This
+governs the maximum number of nonzero values allowed in
+the matrix.
+
+The following is a table showing the Int ranges for
+a given bitwidth:
+
+int: [min, max]
+  4: [-8, 7]
+  5: [-16, 15]
+  6: [-32, 31]
+  7: [-64, 63]
+
 */
-assert initValid {
-  all e: ELL, i, j, z: Int |
-    init[e, i, j, z] => repInv[e]
-}
 
 /*
-Assert that the get function works as expected.
-Using valid indices will always return a value,
-and invalid indices will always return the
-empty set.
+Check that the init predicate does not violate the
+rep invariant for matrices with up to 15 rows and
+15 nonzero values.
+*/
+assert initValid {
+  all e: ELL, i, j, n: Int |
+    init[e, i, j, n] => repInv[e]
+}
+check initValid for 5 Int, 15 seq
+
+/*
+Verify that the get predicate returns a single value for
+all valid indices and the empty set for all invalid
+indices.
 */
 assert getWorks {
   all e: ELL, i: rowInds[e], j: colInds[e] {
     repInv[e] => some get[e, i, j]
   }
-  all e: ELL, i: Int-rowInds[e], j: Int-colInds[e] {
-    repInv[e] => no get[e, i, j]
+  all e: ELL, i, j: Int {
+    (repInv[e] and i not in rowInds[e]) => no get[e, i, j]
+    (repInv[e] and j not in colInds[e]) => no get[e, i, j]
   }
 }
-
-check initValid for 5
-check getWorks for 5 but 0 Matrix
-
+check getWorks for 5 Int, 15 seq, 2 Value, 1 ELL, 0 Matrix
 
 /*
-View ELL matrices in various valid states
+Push the limits of the solver by attempting to fill a matrix
+with as many values as possible.
 */
-pred init0x0x0 { all e: ELL | init[e, 0, 0, 0] }
-pred init1x1x0 { all e: ELL | init[e, 1, 1, 0] }
-pred init1x1x1 { all e: ELL | init[e, 1, 1, 1] }
-pred init2x2x0 { all e: ELL | init[e, 2, 2, 0] }
-pred init2x2x1 { all e: ELL | init[e, 2, 2, 1] }
-pred init2x2x2 { all e: ELL | init[e, 2, 2, 2] }
-pred show0x0x0 { all e: ELL | 
-  e.rows = 0 and e.cols = 0 and e.maxnz = 0 and repInv[e] }
-pred show1x1x1 { all e: ELL | 
-  e.rows = 1 and e.cols = 1 and e.maxnz = 1 and repInv[e] }
-pred show2x2x2 { all e: ELL | 
-  e.rows = 2 and e.cols = 2 and e.maxnz = 2 and repInv[e] }
-run init0x0x0 for 1 but exactly 1 ELL, 0 Matrix
-run init1x1x0 for 2 but exactly 1 ELL, 0 Matrix
-run init1x1x1 for 2 but exactly 1 ELL, 0 Matrix
-run init2x2x0 for 3 but exactly 1 ELL, 0 Matrix
-run init2x2x1 for 3 but exactly 1 ELL, 0 Matrix
-run init2x2x2 for 3 but exactly 1 ELL, 0 Matrix
-run show0x0x0 for 1 but exactly 1 ELL, 0 Matrix
-run show1x1x1 for 2 but exactly 1 ELL, 0 Matrix
-run show2x2x2 for 4 but exactly 1 ELL, 0 Matrix
+pred fillELL [i, j: Int] {
+  some e: ELL |
+    repInv[e] and e.rows = i and e.cols = j and Value in e.values.elems
+}
+run f15x15 { fillELL[15, 15] } for 1 ELL, 0 Matrix, 5 Int, 15 seq, exactly 15 Value
+run f31x31 { fillELL[31, 31] } for 1 ELL, 0 Matrix, 6 Int, 31 seq, exactly 31 Value

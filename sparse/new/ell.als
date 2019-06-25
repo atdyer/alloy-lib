@@ -1,83 +1,87 @@
 module ell
 
+-- https://web.ma.utexas.edu/CNA/ITPACK/manuals/userv2d/node3.html
+
 open matrix
 open util/integer
 
 sig ELL {
   rows, cols, maxnz: Int,
-  V: seq Value,
-  C: seq Int
+  values: seq Value,
+  columns: seq Int
+} {
+  rows >= 0
+  cols >= 0
+  maxnz >= 0
 }
 
 pred repInv [e: ELL] {
-
-  -- prevent overflows
-  mul[e.rows, e.maxnz] >= e.rows
-  mul[e.rows, e.maxnz] >= e.maxnz
-
-  e.rows >= 0                   -- rows >= 0
-  e.cols >= 0                   -- cols >= 0
-  e.maxnz >= 0                  -- maxnz >= 0
-  #e.C = mul[e.rows, e.maxnz]   -- length of C is rows*maxnz
-  #e.V = mul[e.rows, e.maxnz]   -- length of V is rows*maxnz
-
-  -- column indices >= -1
-  all j: e.C.elems | gte[j, -1] and lt[j, e.cols]
-
-  -- column indices are unique per row
+  e.rows >= 0
+  e.cols >= 0
+  e.maxnz >= 0
+  e.maxnz <= e.cols
+  let sz = mul[e.rows, e.maxnz] |
+    #e.columns = sz and #e.values = sz
+  all j: e.columns.elems |
+    gte[j, -1] and lt[j, e.cols]
   all i: rowInds[e], j: colInds[e] |
-    let rc = rowcols[e, i] |
-      #rc.indsOf[j] <= 1
-
-  -- column index -1 always corresponds to Zero in values array
+    let s = mul[i, e.maxnz],
+        t = sub[add[s, e.maxnz], 1] |
+      #e.columns.subseq[s, t].indsOf[j] <= 1
   all i: Int |
-    e.C[i] = -1 <=> e.V[i] = Zero
-
+    e.columns[i] = -1 <=> e.values[i] = Zero
 }
 
-pred init [e: ELL, nrows, ncols, nz: Int] {
+-- initialize empty ELL
+pred init [e: ELL, nrows, ncols, mnz: Int] {
   nrows >= 0
   ncols >= 0
-  0 <= nz and nz <= ncols
+  mnz >= 0
+  mnz <= ncols
   e.rows = nrows
   e.cols = ncols
-  e.maxnz = nz
-  #e.V = mul[e.rows, e.maxnz]
-  #e.C = mul[e.rows, e.maxnz]
-  e.V[Int] = Zero or no e.V[Int]
-  e.C[Int] = -1 or no e.C[Int]
+  e.maxnz = mnz
+  #e.values = mul[nrows, mnz]
+  #e.columns = mul[nrows, mnz]
+  e.values[Int] = Zero or no e.values[Int]
+  e.columns[Int] = -1 or no e.columns[Int]
 }
 
-
+-- create [0:e.rows)
 fun rowInds [e: ELL]: Int {
   { i: Int | 0 <= i and i < e.rows }
 }
 
-fun colInds [e: ELL]: Int {
-  { i: Int | 0 <= i and i < e.cols }
+-- create [0:e.cols)
+fun colInds[e: ELL]: Int {
+  { j: Int | 0 <= j and j < e.cols }
 }
 
-fun rowcols [e: ELL, r: Int]: seq Int {
-  let a = mul[r, e.maxnz],
+-- get seq of columns for a single row
+fun rowcols [e: ELL, row: Int]: seq Int {
+  let a = mul[row, e.maxnz],
       b = add[a, e.maxnz] {
-    e.C.subseq[a, sub[b, 1]]
+    e.columns.subseq[a, sub[b, 1]]
   }
 }
 
-fun rowvals [e: ELL, r: Int]: seq Value {
-  let a = mul[r, e.maxnz],
+-- get seq of values for a single row
+fun rowvals [e: ELL, row: Int]: seq Value {
+  let a = mul[row, e.maxnz],
       b = add[a, e.maxnz] {
-    e.V.subseq[a, sub[b, 1]]
+    e.values.subseq[a, sub[b, 1]]
   }
 }
 
+-- create {column->value} for a single row
+fun getrow [e: ELL, row: Int]: Int->Value {
+  let cols = rowcols[e, row],
+      vals = rowvals[e, row] | ~cols.vals
+}
+
+-- retrieve a value from the matrix
 fun get [e: ELL, row, col: Int]: Value {
-  (row < 0 or row >= e.rows or
-   col < 0 or col >= e.cols) => none else {
-    let sc = rowcols[e, row],
-        sv = rowvals[e, row],
-        i = sc.idxOf[col] {
-        no i => Zero else sv[i]
-    }
-  }
+  (row not in rowInds[e] or col not in colInds[e]) => none else
+  let val = getrow[e, row][col] |
+    no val => Zero else val
 }
