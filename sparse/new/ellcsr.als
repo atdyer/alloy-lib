@@ -14,7 +14,6 @@ pred ellcsr [e: ELL, c: CSR] {
   c.IA[0] = 0
   #c.IA = add[c.rows, 1]
   let nsteps = mul[e.rows, e.maxnz] {
-
     some kpos: seq Int {
       #kpos = add[nsteps, 1]
       kpos[0] = 0  -- kpos before looping begins
@@ -42,6 +41,13 @@ pred ellcsr [e: ELL, c: CSR] {
         }
       }
     }
+    -- when rows=0 or maxnz=0, IA is all 0s
+    -- and A and JA are empty
+    nsteps = 0 => {
+      c.IA.elems = 0
+      #c.A = 0
+      #c.JA = 0
+    }
 
   }
 }
@@ -53,7 +59,7 @@ pred isNonzero [e: ELL, i, k: Int] {
 -- ell -> csr makes a valid csr
 check {
   all e: ELL, c: CSR {
-    e.rows > 0 and e.cols > 0 and e.maxnz > 0 and
+    e.rows > 0 and e.cols > 0 and -- e.maxnz > 0 and
     repInv[e] and ellcsr[e, c] => repInv[c]
   }
 } for 7 seq, 0 Matrix, 1 ELL, 1 CSR, 3 Value
