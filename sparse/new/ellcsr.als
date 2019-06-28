@@ -66,6 +66,21 @@ assert transValid {
 check transValid for 4 Int, 7 seq, 1 Matrix, 1 ELL, 1 CSR, 2 Value  -- 17s, 89s*
 check transValid for 4 Int, 7 seq, 1 Matrix, 1 ELL, 1 CSR, 5 Value  -- 23s, 134s*
 
+-- Check that the translation can occur in-place
+assert inPlace {
+  all e: ELL, kpos: seq Int {
+    genkpos[e, kpos] => {
+      all i: rowInds[e] {
+        all k: indices[e.maxnz] {
+          let idx = i.mul[e.maxnz].add[k] |
+            kpos[idx] <= idx
+        }
+      }
+    }
+  }
+}
+check inPlace for 5 Int, 15 seq, 0 Matrix, 1 ELL, 0 CSR, 2 Value
+
 /* Runs:
  *
  */
