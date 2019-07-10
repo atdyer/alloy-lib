@@ -34,7 +34,7 @@ def ellcsrip(cols, vals, nrows, maxnz):
                 vals[kpos] = vals[idx]
                 cols[kpos] = cols[idx]
                 kpos += 1
-            IA[i+1] = kpos
+        IA[i+1] = kpos
     return vals, cols, IA
 
 

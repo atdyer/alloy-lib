@@ -21,6 +21,10 @@ pred dotProd [row: Int->Value, x: Matrix, b: SumProd] {
     no b.values[col]
 }
 
+pred dpnew [row: Int->Value, x: Matrix, b: SumProd] {
+
+}
+
 -- generate ixj MVM, force all values into matrix
 pred show [i, j: Int] {
   some A, x, b: Matrix |
