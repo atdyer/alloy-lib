@@ -4,24 +4,37 @@ open csr
 pred alpha [c: CSR, m: Matrix] {
   m.rows = c.rows
   m.cols = c.cols
+  m.values = { i: range[c.rows], j: range[c.cols], v: Value |
+                 let k = { k: range[c.IA[i], c.IA[add[i, 1]]] | c.JA[k] = j } |
+                   one k => v = c.A[k] else v = Zero }
+}
+
+pred alpha2 [c: CSR, m: Matrix] {
+  m.rows = c.rows
+  m.cols = c.cols
   all i, j: Int |
     get[c, i, j] = m.values[i][j]
 }
 
-pred alphanew [c: CSR, m: Matrix] {
-  m.rows = c.rows
-  m.cols = c.cols
-  m.values = { 
-    i: rowInds[c], j: colInds[c], v: Value |
-      (some k: Int | c.IA[i] <= k and k < c.IA[add[i, 1]]
-                     and j = c.JA[k] and v = c.A[k])
-      or v = Zero 
-  }
+pred show {
+  some c: CSR, m: Matrix |
+    repInv[c] and c.rows = 1 and c.cols = 2
+      and alpha[c, m] and not alpha2[c, m]
+        -- and some m2: Matrix | alpha2[c, m2]
 }
+
+run show for 1 CSR, 1 Matrix, 3 Value, 4 Int
+
+assert alphaSame {
+  all c: CSR, m: Matrix |
+    repInv[c] => (alpha[c, m] <=> alpha2[c, m])
+}
+
+check alphaSame for exactly 1 CSR, 1 Matrix, 3 Value, 4 Int
 
 assert repValid {
   all c: CSR, m: Matrix |
-    repInv[c] and alphanew[c, m] => repInv[m]
+    repInv[c] and alpha[c, m] => repInv[m]
 }
 -- up to 6x6 matrix, up to 7 stored values (4sec, lingeling)
 -- up to 14x14 matrix, up to 15 stored values (16min, lingeling)
