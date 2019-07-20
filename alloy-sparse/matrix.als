@@ -5,7 +5,7 @@ open util/integer
 
 sig Matrix {
   rows, cols: Int,
-  vals: (Int -> Int) -> lone Value
+  vals: Int -> Int -> lone Value
 }
 
 pred repInv [m: Matrix] {

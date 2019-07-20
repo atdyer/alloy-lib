@@ -10,7 +10,6 @@ def csr_transpose(n, a, ja, ia, ao, jao, iao):
         for k in range(ia[i], ia[i+1]):
             j = ja[k] + 1
             iao[j] = iao[j] + 1
-            print(i, k, iao[j])
 
     # set pointers from lengths
     iao[0] = 0
