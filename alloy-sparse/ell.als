@@ -58,3 +58,17 @@ fun getrow [e: ELL, row: Int]: Int->Value {
       vals = rowvals[e, row] | ~cols.vals
 }
 
+fun get [e: ELL, i, j: Int]: Value {
+  not inrange[e, i, j] => none else
+  let a = i.mul[e.maxnz],
+      b = a.add[e.maxnz].sub[1],
+      cs = e.cids.subseq[a, b],
+      vs = e.vals.subseq[a, b],
+      k = cs.idxOf[j] {
+    no k => Zero else vs[k]
+  }
+}
+
+pred inrange [e: ELL, i, j: Int] {
+  i in range[e.rows] and j in range[e.cols]
+}
