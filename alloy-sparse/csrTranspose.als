@@ -1,8 +1,13 @@
 open csr
+open csrRefinement
+open matrixTranspose
 open util/ordering[LS] as ls
 
+-- Loop state for step 3 of algorithm
 sig LS {
-  i, k: Int
+  i, k: Int,
+  ia, ja: seq Int,
+  a: seq Value
 }
 
 -- count number of values in each column
@@ -11,10 +16,15 @@ sig LS {
 -- shift iao
 
 pred csrTranspose [c, c': CSR] {
-  some iao, iao': seq Int {
+  c.rows = c'.cols
+  c.cols = c'.rows
+  -- four steps in algorithm
+  some iao, iao', iao'', iao''': seq Int {
     countcols[c, iao]
     setptrs[iao, iao']
---  ...
+    copyvals[c, c', iao', iao'']
+    shift[iao'', iao''']
+    c'.IA = iao'''
   }
 }
 
@@ -34,39 +44,112 @@ pred setptrs [iao, iao': seq Int] {
       iao'[i'] = iao'[i].add[iao[i']]
 }
 
-pred copyvals [c: CSR] {
-  ls/first.i = 0
-  ls/first.k = c.IA[0]
+-- (3)
+pred copyvals [c, c': CSR, iao, iao': seq Int] {
+  initIt[c, iao]
+  -- structure
   all it: LS-ls/last {
-    it.next.k = 
+    it.next.k = it.k.add[1]
+    it.k = c.IA[it.i.add[1]].sub[1] => 
+      it.next.i = it.i.add[1]
+    else
+      it.next.i = it.i
   }
+  -- values
+  all it: LS-ls/last {
+    let j = c.JA[it.k], nxt = it.ia[j] {
+      it.next.ia = it.ia ++ j->nxt.add[1]
+      it.next.ja = it.ja ++ nxt->it.i
+      it.next.a = it.a ++ nxt->c.A[it.k]
+    }
+  }
+  iao' = ls/last.ia
+  c'.A = ls/last.a
+  c'.JA = ls/last.ja
 }
 
--- (3)
-//pred copyvals [c, c': CSR, iao: seq Int] {
-//  all i: range[c.rows] {
-//    all k: range[c.IA[i], c.IA[i.add[1]]] {
-//      let j = c.JA[k],
-//          next = iao[j] { --      <---\
-//        -- c'.A[next] = a[k]          |
-//        -- c'.JA[next] = i            |
-//        -- iao[j] = next + 1      <---/
-//      }
-//    }
-//  }
-//}
+-- (4)
+pred shift [iao, iao': seq Int] {
+  #iao = #iao'
+  iao'[0] = 0
+  all i: range[1, #iao] | iao'[i] = iao[i.sub[1]]
+}
+
+pred initIt [c: CSR, iao: seq Int] {
+  ls/first.i = 0
+  ls/first.k = 0
+  ls/first.ia = iao
+  ls/first.ja[Int] = 0
+  ls/first.a[Int] = Zero
+  #ls/first.ja = #c.JA
+  #ls/first.a = #c.A
+  #LS = #c.IA.add[1]
+}
 
 pred example [c: CSR] {
+  repInv[c]
   c.rows = 3
   c.cols = 3
   #c.A = 4
+  #c.A[Int] = 4
   c.JA = { 0->1 ++ 1->0 ++ 2->2 ++ 3->1 }
   c.IA = { 0->0 ++ 1->1 ++ 2->3 ++ 3->4 }
 }
 
+pred square [c: CSR] {
+  c.rows = c.cols
+}
+
 run { 
   some c, c': CSR |
-    repInv[c] and repInv[c'] and
     example[c] and
     csrTranspose[c, c']
-} for 7 seq, exactly 5 Value, exactly 2 CSR, 0 Matrix
+} for 7 seq, exactly 5 Value, exactly 2 CSR, 0 Matrix, 5 LS
+
+check {
+  all c, c': CSR, m, m': Matrix |
+    example[c] and
+    alpha[c, m] and
+    csrTranspose[c, c'] and  
+    transpose[m, m'] 
+      => alpha[c', m']
+} for 7 seq, exactly 5 Value, exactly 2 Matrix, exactly 2 CSR, 5 LS
+
+
+---
+--- work-in-progress, for generalizing check
+---
+
+check {
+  all c, c': CSR, m, m': Matrix |
+    repInv[c] and #c.IA = 4 and square[c] and
+    alpha[c, m] and
+    csrTranspose[c, c'] and
+    transpose[m, m']
+      => alpha[c', m']
+} for 7 seq, 5 Value, exactly 2 Matrix, exactly 2 CSR, 5 LS
+
+
+---
+--- work-in-progress, for lining up indices and updates
+---
+
+pred copyvals2 [c: CSR, iao, iao': seq Int] {
+  ls/first.i = -1
+  ls/first.k = -1
+  ls/first.ia = iao
+  -- structure
+  all it: LS-ls/last {
+    it.next.k = it.k.add[1]
+    it.k = c.IA[it.i.add[1]].sub[1] =>
+      it.next.i = it.i.add[1]
+    else
+      it.next.i = it.i
+  }
+  --values
+  all it: LS-ls/first {
+    let j = c.JA[it.k], nxt = it.ia[j] {
+      it.prev.ia = it.ia ++ j->nxt.sub[1]
+    }
+  }
+}

@@ -14,6 +14,12 @@ pred repInv [m: Matrix] {
   m.vals.univ = range[m.rows]->range[m.cols]
 }
 
+pred equivalent [m, m': Matrix] {
+  m.rows = m'.rows
+  m.cols = m'.cols
+  m.vals = m'.vals
+}
+
 pred init [m: Matrix, nrows, ncols: Int] {
   nrows >= 0
   ncols >= 0
