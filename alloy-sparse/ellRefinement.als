@@ -22,6 +22,10 @@ assert initValid {
     init[e, i, j, z] and alpha[e, m] => init[m, i, j]
 }
 
+check {
+  all e: ELL | repInv[e] => some m: Matrix | alpha[e, m]
+}
+
 -- up to 7 rows, 7 values (~1 sec, lingeling)
 -- up to 15 rows, 15 values (~30sec, lingeling)
 check repValid for exactly 1 ELL, exactly 1 Matrix, 8 Value, 4 Int, 7 seq
